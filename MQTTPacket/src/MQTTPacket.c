@@ -163,9 +163,9 @@ void writeChar(unsigned char** pptr, char c)
  */
 void writeInt(unsigned char** pptr, int anInt)
 {
-	**pptr = (unsigned char)(anInt / 256);
+	**pptr = (unsigned char)(anInt >> 8);
 	(*pptr)++;
-	**pptr = (unsigned char)(anInt % 256);
+	**pptr = (unsigned char)(anInt & 0xff);
 	(*pptr)++;
 }
 
@@ -193,18 +193,17 @@ int getLenStringLen(char* ptr)
 
 void writeMQTTString(unsigned char** pptr, MQTTString mqttstring)
 {
-	if (mqttstring.lenstring.len > 0)
+  if (mqttstring.cstring) 
+    writeCString(pptr, mqttstring.cstring);
+	else if (mqttstring.lenstring.len > 0)
 	{
 		writeInt(pptr, mqttstring.lenstring.len);
 		memcpy(*pptr, mqttstring.lenstring.data, mqttstring.lenstring.len);
 		*pptr += mqttstring.lenstring.len;
 	}
-	else if (mqttstring.cstring)
-		writeCString(pptr, mqttstring.cstring);
 	else
 		writeInt(pptr, 0);
 }
-
 
 /**
  * @param mqttstring the MQTTString structure into which the data is to be read
